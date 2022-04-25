@@ -5,6 +5,8 @@
 package hashset
 
 import (
+	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -98,11 +100,95 @@ func TestSetSerialization(t *testing.T) {
 
 	assert()
 
-	json, err := set.ToJSON()
+	bytes, err := set.ToJSON()
 	assert()
 
-	err = set.FromJSON(json)
+	err = set.FromJSON(bytes)
 	assert()
+
+	bytes, err = json.Marshal([]interface{}{"a", "b", "c", set})
+	if err != nil {
+		t.Errorf("Got error %v", err)
+	}
+
+	err = json.Unmarshal([]byte(`[1,2,3]`), &set)
+	if err != nil {
+		t.Errorf("Got error %v", err)
+	}
+}
+
+func TestSetString(t *testing.T) {
+	c := New()
+	c.Add(1)
+	if !strings.HasPrefix(c.String(), "HashSet") {
+		t.Errorf("String should start with container name")
+	}
+}
+
+func TestSetIntersection(t *testing.T) {
+	set := New()
+	another := New()
+
+	intersection := set.Intersection(another)
+	if actualValue, expectedValue := intersection.Size(), 0; actualValue != expectedValue {
+		t.Errorf("Got %v expected %v", actualValue, expectedValue)
+	}
+
+	set.Add("a", "b", "c", "d")
+	another.Add("c", "d", "e", "f")
+
+	intersection = set.Intersection(another)
+
+	if actualValue, expectedValue := intersection.Size(), 2; actualValue != expectedValue {
+		t.Errorf("Got %v expected %v", actualValue, expectedValue)
+	}
+	if actualValue := intersection.Contains("c", "d"); actualValue != true {
+		t.Errorf("Got %v expected %v", actualValue, true)
+	}
+}
+
+func TestSetUnion(t *testing.T) {
+	set := New()
+	another := New()
+
+	union := set.Union(another)
+	if actualValue, expectedValue := union.Size(), 0; actualValue != expectedValue {
+		t.Errorf("Got %v expected %v", actualValue, expectedValue)
+	}
+
+	set.Add("a", "b", "c", "d")
+	another.Add("c", "d", "e", "f")
+
+	union = set.Union(another)
+
+	if actualValue, expectedValue := union.Size(), 6; actualValue != expectedValue {
+		t.Errorf("Got %v expected %v", actualValue, expectedValue)
+	}
+	if actualValue := union.Contains("a", "b", "c", "d", "e", "f"); actualValue != true {
+		t.Errorf("Got %v expected %v", actualValue, true)
+	}
+}
+
+func TestSetDifference(t *testing.T) {
+	set := New()
+	another := New()
+
+	difference := set.Difference(another)
+	if actualValue, expectedValue := difference.Size(), 0; actualValue != expectedValue {
+		t.Errorf("Got %v expected %v", actualValue, expectedValue)
+	}
+
+	set.Add("a", "b", "c", "d")
+	another.Add("c", "d", "e", "f")
+
+	difference = set.Difference(another)
+
+	if actualValue, expectedValue := difference.Size(), 2; actualValue != expectedValue {
+		t.Errorf("Got %v expected %v", actualValue, expectedValue)
+	}
+	if actualValue := difference.Contains("a", "b"); actualValue != true {
+		t.Errorf("Got %v expected %v", actualValue, true)
+	}
 }
 
 func benchmarkContains(b *testing.B, set *Set, size int) {

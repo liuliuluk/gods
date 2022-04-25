@@ -6,9 +6,8 @@ package singlylinkedlist
 
 import "github.com/emirpasic/gods/containers"
 
-func assertIteratorImplementation() {
-	var _ containers.IteratorWithIndex = (*Iterator)(nil)
-}
+// Assert Iterator implementation
+var _ containers.IteratorWithIndex = (*Iterator)(nil)
 
 // Iterator holding the iterator's state
 type Iterator struct {
@@ -67,4 +66,18 @@ func (iterator *Iterator) Begin() {
 func (iterator *Iterator) First() bool {
 	iterator.Begin()
 	return iterator.Next()
+}
+
+// NextTo moves the iterator to the next element from current position that satisfies the condition given by the
+// passed function, and returns true if there was a next element in the container.
+// If NextTo() returns true, then next element's index and value can be retrieved by Index() and Value().
+// Modifies the state of the iterator.
+func (iterator *Iterator) NextTo(f func(index int, value interface{}) bool) bool {
+	for iterator.Next() {
+		index, value := iterator.Index(), iterator.Value()
+		if f(index, value) {
+			return true
+		}
+	}
+	return false
 }

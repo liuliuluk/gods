@@ -9,9 +9,8 @@ import (
 	"github.com/emirpasic/gods/lists/doublylinkedlist"
 )
 
-func assertIteratorImplementation() {
-	var _ containers.ReverseIteratorWithIndex = (*Iterator)(nil)
-}
+// Assert Iterator implementation
+var _ containers.ReverseIteratorWithIndex = (*Iterator)(nil)
 
 // Iterator holding the iterator's state
 type Iterator struct {
@@ -74,4 +73,32 @@ func (iterator *Iterator) First() bool {
 // Modifies the state of the iterator.
 func (iterator *Iterator) Last() bool {
 	return iterator.iterator.Last()
+}
+
+// NextTo moves the iterator to the next element from current position that satisfies the condition given by the
+// passed function, and returns true if there was a next element in the container.
+// If NextTo() returns true, then next element's index and value can be retrieved by Index() and Value().
+// Modifies the state of the iterator.
+func (iterator *Iterator) NextTo(f func(index int, value interface{}) bool) bool {
+	for iterator.Next() {
+		index, value := iterator.Index(), iterator.Value()
+		if f(index, value) {
+			return true
+		}
+	}
+	return false
+}
+
+// PrevTo moves the iterator to the previous element from current position that satisfies the condition given by the
+// passed function, and returns true if there was a next element in the container.
+// If PrevTo() returns true, then next element's index and value can be retrieved by Index() and Value().
+// Modifies the state of the iterator.
+func (iterator *Iterator) PrevTo(f func(index int, value interface{}) bool) bool {
+	for iterator.Prev() {
+		index, value := iterator.Index(), iterator.Value()
+		if f(index, value) {
+			return true
+		}
+	}
+	return false
 }

@@ -20,9 +20,8 @@ import (
 	"strings"
 )
 
-func assertSetImplementation() {
-	var _ sets.Set = (*Set)(nil)
-}
+// Assert Set implementation
+var _ sets.Set = (*Set)(nil)
 
 // Set holds elements in go's native map
 type Set struct {
@@ -115,4 +114,59 @@ func (set *Set) String() string {
 	}
 	str += strings.Join(items, ", ")
 	return str
+}
+
+// Intersection returns the intersection between two sets.
+// The new set consists of all elements that are both in "set" and "another".
+// Ref: https://en.wikipedia.org/wiki/Intersection_(set_theory)
+func (set *Set) Intersection(another *Set) *Set {
+	result := New()
+
+	// Iterate over smaller set (optimization)
+	if set.Size() <= another.Size() {
+		for item := range set.table {
+			if _, contains := another.table[item]; contains {
+				result.Add(item)
+			}
+		}
+	} else {
+		for item := range another.table {
+			if _, contains := set.table[item]; contains {
+				result.Add(item)
+			}
+		}
+	}
+
+	return result
+}
+
+// Union returns the union of two sets.
+// The new set consists of all elements that are in "set" or "another" (possibly both).
+// Ref: https://en.wikipedia.org/wiki/Union_(set_theory)
+func (set *Set) Union(another *Set) *Set {
+	result := New()
+
+	for item := range set.table {
+		result.Add(item)
+	}
+	for item := range another.table {
+		result.Add(item)
+	}
+
+	return result
+}
+
+// Difference returns the difference between two sets.
+// The new set consists of all elements that are in "set" but not in "another".
+// Ref: https://proofwiki.org/wiki/Definition:Set_Difference
+func (set *Set) Difference(another *Set) *Set {
+	result := New()
+
+	for item := range set.table {
+		if _, contains := another.table[item]; !contains {
+			result.Add(item)
+		}
+	}
+
+	return result
 }

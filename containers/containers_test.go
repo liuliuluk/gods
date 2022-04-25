@@ -7,7 +7,9 @@
 package containers
 
 import (
+	"fmt"
 	"github.com/emirpasic/gods/utils"
+	"strings"
 	"testing"
 )
 
@@ -32,8 +34,19 @@ func (container ContainerTest) Values() []interface{} {
 	return container.values
 }
 
+func (container ContainerTest) String() string {
+	str := "ContainerTest\n"
+	var values []string
+	for _, value := range container.values {
+		values = append(values, fmt.Sprintf("%v", value))
+	}
+	str += strings.Join(values, ", ")
+	return str
+}
+
 func TestGetSortedValuesInts(t *testing.T) {
 	container := ContainerTest{}
+	GetSortedValues(container, utils.IntComparator)
 	container.values = []interface{}{5, 1, 3, 2, 4}
 	values := GetSortedValues(container, utils.IntComparator)
 	for i := 1; i < container.Size(); i++ {
@@ -45,6 +58,7 @@ func TestGetSortedValuesInts(t *testing.T) {
 
 func TestGetSortedValuesStrings(t *testing.T) {
 	container := ContainerTest{}
+	GetSortedValues(container, utils.StringComparator)
 	container.values = []interface{}{"g", "a", "d", "e", "f", "c", "b"}
 	values := GetSortedValues(container, utils.StringComparator)
 	for i := 1; i < container.Size(); i++ {

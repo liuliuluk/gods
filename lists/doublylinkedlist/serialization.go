@@ -9,10 +9,9 @@ import (
 	"github.com/emirpasic/gods/containers"
 )
 
-func assertSerializationImplementation() {
-	var _ containers.JSONSerializer = (*List)(nil)
-	var _ containers.JSONDeserializer = (*List)(nil)
-}
+// Assert Serialization implementation
+var _ containers.JSONSerializer = (*List)(nil)
+var _ containers.JSONDeserializer = (*List)(nil)
 
 // ToJSON outputs the JSON representation of list's elements.
 func (list *List) ToJSON() ([]byte, error) {
@@ -28,4 +27,14 @@ func (list *List) FromJSON(data []byte) error {
 		list.Add(elements...)
 	}
 	return err
+}
+
+// UnmarshalJSON @implements json.Unmarshaler
+func (list *List) UnmarshalJSON(bytes []byte) error {
+	return list.FromJSON(bytes)
+}
+
+// MarshalJSON @implements json.Marshaler
+func (list *List) MarshalJSON() ([]byte, error) {
+	return list.ToJSON()
 }

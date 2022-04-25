@@ -24,9 +24,8 @@ import (
 	"strings"
 )
 
-func assertTreeImplementation() {
-	var _ trees.Tree = (*Tree)(nil)
-}
+// Assert Tree implementation
+var _ trees.Tree = (*Tree)(nil)
 
 // Tree holds elements of the B-tree
 type Tree struct {
@@ -95,6 +94,13 @@ func (tree *Tree) Get(key interface{}) (value interface{}, found bool) {
 	return nil, false
 }
 
+// GetNode searches the node in the tree by key and returns its node or nil if key is not found in tree.
+// Key should adhere to the comparator's type assertion, otherwise method panics.
+func (tree *Tree) GetNode(key interface{}) *Node {
+	node, _, _ := tree.searchRecursively(tree.Root, key)
+	return node
+}
+
 // Remove remove the node from the tree by key.
 // Key should adhere to the comparator's type assertion, otherwise method panics.
 func (tree *Tree) Remove(key interface{}) {
@@ -113,6 +119,19 @@ func (tree *Tree) Empty() bool {
 // Size returns number of nodes in the tree.
 func (tree *Tree) Size() int {
 	return tree.size
+}
+
+// Size returns the number of elements stored in the subtree.
+// Computed dynamically on each call, i.e. the subtree is traversed to count the number of the nodes.
+func (node *Node) Size() int {
+	if node == nil {
+		return 0
+	}
+	size := 1
+	for _, child := range node.Children {
+		size += child.Size()
+	}
+	return size
 }
 
 // Keys returns all keys in-order
@@ -191,8 +210,7 @@ func (tree *Tree) RightValue() interface{} {
 // String returns a string representation of container (for debugging purposes)
 func (tree *Tree) String() string {
 	var buffer bytes.Buffer
-	if _, err := buffer.WriteString("BTree\n"); err != nil {
-	}
+	buffer.WriteString("BTree\n")
 	if !tree.Empty() {
 		tree.output(&buffer, tree.Root, 0, true)
 	}
@@ -209,10 +227,8 @@ func (tree *Tree) output(buffer *bytes.Buffer, node *Node, level int, isTail boo
 			tree.output(buffer, node.Children[e], level+1, true)
 		}
 		if e < len(node.Entries) {
-			if _, err := buffer.WriteString(strings.Repeat("    ", level)); err != nil {
-			}
-			if _, err := buffer.WriteString(fmt.Sprintf("%v", node.Entries[e].Key) + "\n"); err != nil {
-			}
+			buffer.WriteString(strings.Repeat("    ", level))
+			buffer.WriteString(fmt.Sprintf("%v", node.Entries[e].Key) + "\n")
 		}
 	}
 }
