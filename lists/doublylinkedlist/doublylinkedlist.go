@@ -87,6 +87,7 @@ func (list *List) Get(index int) (interface{}, bool) {
 	}
 
 	// determine traveral direction, last to first or first to last
+	//使用类似二分法方式，可减少循环次数
 	if list.size-index < index {
 		element := list.last
 		for e := list.size - 1; e != index; e, element = e-1, element.prev {
